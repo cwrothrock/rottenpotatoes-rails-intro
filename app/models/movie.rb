@@ -4,6 +4,6 @@ class Movie < ActiveRecord::Base
     end
     
     def self.with_ratings ratings
-        Movie.where(rating: ratings)
+        Movie.where(rating: (ratings.is_a?(Hash) ? ratings.keys : ratings))
     end
 end

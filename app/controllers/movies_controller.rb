@@ -11,10 +11,20 @@ class MoviesController < ApplicationController
   end
 
   def index
+    #set and update session ratings
     @all_ratings = Movie.ratings.sort
-    @rating_params = (params[:ratings].nil? ? @all_ratings : params[:ratings].keys)
-    @sort_by = params[:sort_by]
-    @movies = Movie.with_ratings(@rating_params).order(@sort_by)
+    session[:ratings] = session[:ratings] || @all_ratings    
+    @ratings = params[:ratings] || session[:ratings]
+    session[:ratings] = @ratings
+    #set and update session sort_by
+    @sort_by = params[:sort_by] || session[:sort_by]
+    session[:sort_by] = @sort_by
+    #get movies and ensure session is preserved in the edge cases of unchecked boxes or flash events
+    @movies = Movie.with_ratings(session[:ratings]).order(session[:sort_by])
+    if (params[:sort_by].nil? and !(session[:sort_by].nil?)) or (params[:ratings].nil? and !(session[:ratings].nil?))
+      flash.keep 
+      redirect_to movies_path(sort_by: session[:sort_by], ratings: session[:ratings])
+    end
   end
 
   def new
